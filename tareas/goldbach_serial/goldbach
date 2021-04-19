@@ -1,6 +1,0 @@
-#include stdio.h
-
-int main{
-    long long number = 0;
-    while(fscanf(input, "%lld", &number) == 1);
-}
