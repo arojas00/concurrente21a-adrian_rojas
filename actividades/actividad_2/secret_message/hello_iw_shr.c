@@ -12,6 +12,7 @@
 typedef struct
 {
     size_t thread_count;
+    char* message;
 } shared_data_t;
 
 typedef struct
@@ -22,6 +23,7 @@ typedef struct
 
 int create_threads(shared_data_t *shared_data);
 void *run(void *data);
+char generate_random_letter();
 
 int main(int argc, char *argv[])
 {
@@ -39,10 +41,18 @@ int main(int argc, char *argv[])
         }
     }
 
+    shared_data.message = (char*)calloc(shared_data.thread_count, sizeof(char*));
+
     struct timespec start_time;
     clock_gettime(/*clk_id*/ CLOCK_MONOTONIC, &start_time);
 
     error = create_threads(&shared_data);
+
+    // ciclo de impresion
+    printf("Cadena de shared data\n");
+    for (size_t indice = 0; indice < shared_data.thread_count; indice++) {
+        printf("%c ", shared_data.message[indice]);
+    }
 
     struct timespec finish_time;
     clock_gettime(/*clk_id*/ CLOCK_MONOTONIC, &finish_time);
@@ -98,7 +108,14 @@ int create_threads(shared_data_t *shared_data)
 void *run(void *data)
 {
     const private_data_t *private_data = (private_data_t *)data;
-    printf("Hello from secondary thread %zu of %zu\n", private_data->thread_number, private_data->shared_data->thread_count);
-
+    shared_data_t *shared_data = (shared_data_t*) private_data->shared_data;
+    char caracter = generate_random_letter();
+    shared_data->message[private_data->thread_number] = caracter;
+    printf("Hello from secondary thread %zu caracter: %c\n", private_data->thread_number, caracter);
     return NULL;
+}
+
+char generate_random_letter()
+{
+    return 'A' + (random() % 26);
 }
