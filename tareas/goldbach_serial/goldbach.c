@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
-
+/**
+ * @brief check if the number si prime
+ * @param number the number to be checked
+ * @return bool telling if prime number
+ */
 _Bool checkPrime(long long number){
     _Bool isPrime = true;
     for (long long i = 2; i <= number/2; i++){
@@ -11,7 +15,11 @@ _Bool checkPrime(long long number){
     }
     return isPrime;
 }
-
+/**
+ * @brief print the two numbers composing the sum
+ * @param number the number to chech goldbach
+ * @param count the number of sums found
+ */
 void printEvenSums(long long number, int count){
     FILE* output = stdout;
     fprintf(output, ": ");
@@ -29,7 +37,10 @@ void printEvenSums(long long number, int count){
     }
     fprintf(output, "\n");
 }
-
+/**
+ * @brief find the amount of sums for the even number
+ * @param number the number to check goldbach
+ */
 void sumEven(long long number){
     FILE* output = stdout;
     int count = 0;
@@ -53,7 +64,11 @@ void sumEven(long long number){
         fprintf(output, "\n");
     }
 }
-
+/**
+ * @brief print the three numbers composing the sum
+ * @param number the number to chech goldbach
+ * @param count the number of sums found
+ */
 void printOddSums(long long number, int count){
     FILE* output = stdout;
     fprintf(output, ": ");
@@ -73,7 +88,10 @@ void printOddSums(long long number, int count){
     }
     fprintf(output, "\n");
 }
-
+/**
+ * @brief find the amount of sums for the  odd number
+ * @param number the number to check goldbach
+ */
 void sumOdd(long long number){
     FILE* output = stdout;
     int count = 0;
@@ -99,7 +117,10 @@ void sumOdd(long long number){
         fprintf(output, "\n");
     }
 }
-
+/**
+ * @brief check if the number si oven or odd
+ * @param number the number to be checked
+ */
 void checkEven(long long number){
     if(number%2 == 0){
         sumEven(number);
@@ -107,7 +128,10 @@ void checkEven(long long number){
         sumOdd(number);
     }
 }
-
+/**
+ * @brief check if the number si valid
+ * @param number the number to be checked
+ */
 void checkValid(long long number){
     FILE* output = stdout;
     if(number <= 5 && number >= 0){
