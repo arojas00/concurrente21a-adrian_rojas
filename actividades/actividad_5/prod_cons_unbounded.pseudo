@@ -1,0 +1,58 @@
+main(argc, argv[]):
+  if argc = 8 then
+    shared unit_count := integer(argv[1])
+    shared producer_count := integer(argv[2])
+    shared consumer_count := integer(argv[3])
+    shared producer_min_delay := integer(argv[4])
+    shared producer_max_delay := integer(argv[5])
+    shared consumer_min_delay := integer(argv[6])
+    shared consumer_max_delay := integer(argv[7])
+
+    shared units_produced := 0
+    //shared units_consumed := 0
+
+    shared queue := create_integer_queue()
+
+    shared can_access_units_produced := semaphore(1)
+    shared can_access_units_consumed := semaphore(1)
+    shared can_access_queue := semaphore(1)
+    //shared can_produce := semaphore(buffer_capacity)
+    shared can_consume := semaphore(0)
+
+    create_thread(producer_count, producer)
+    create_thread(consumer_count, consumer)
+  end if
+
+producer:
+    while true do
+        wait(can_access_units_produced)
+            if (units_produced >= unit_count)
+                signal(can_access_units_produced)
+                break while
+            units_produced := units_produced + 1
+            produced_unit := units_produced
+        signal(can_access_units_produced)
+
+        wait(can_access_queue)
+            enqueue(queue, produced_unit)
+            print("Produced", produced_unit)
+        signal(can_access_queue)
+
+        signal(can_consume)
+    end while
+
+consumer:
+  while true do 
+    wait(can_access_queue)
+        if empty(queue)
+            signal(can_access_queue)
+            break while
+        value:=dequeue(queue)
+    signal(can_access_queue)
+
+    wait(can_cansume)
+
+  end while
+
+random_between(min, max):
+  return min + rand() % (max - min)
