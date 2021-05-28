@@ -2,9 +2,9 @@
 #include <stdbool.h>
 #include <stdlib.h>
 /**
- * @brief check if the number si prime
+ * @brief check if the number is prime
  * @param number the number to be checked
- * @return bool telling if prime number
+ * @return bool telling if the number is prime
  */
 _Bool check_prime(long long number) {
 	_Bool is_prime = true;
@@ -17,119 +17,85 @@ _Bool check_prime(long long number) {
 	return is_prime;
 }
 /**
- * @brief print the two numbers composing the sum
- * @param number the number to chech goldbach
- * @param count the number of sums found
+ * @brief finds the sums for each number and prints them if needed
+ * @param number the number to be checked
+ * @param _Bool tells if the numer es even
+ * @param _Bool tells if it should print the numbers
+ * @return int telling the amount of sums found
  */
-void print_even_sums(long long number, int count) {
-	FILE *output = stdout;
-	fprintf(output, ": ");
-	int index = 0;
-	for (int i = 2; i < number; i++) {
-		for (int j = i; j < number; j++) {
-			if ((check_prime(i) == true && check_prime(j) == true) && i + j == number) {
-				fprintf(output, "%d + %d", i, j);
-				index++;
-				if (index < count) {
-					fprintf(output, ", ");
-				}
-			}
-		}
-	}
-	fprintf(output, "\n");
-}
-/**
- * @brief find the amount of sums for the even number
- * @param number the number to check goldbach
- */
-void sum_even(long long number) {
+int find_sums(long long number, _Bool even, _Bool print) {
 	FILE *output = stdout;
 	int count = 0;
-	_Bool negative = false;
-	fprintf(output, "%lld: ", number);
-	if (number < 0) {
-		number *= (-1);
-		negative = true;
-	}
-	for (int i = 2; i < number; i++) {
-		for (int j = i; j < number; j++) {
-			if ((check_prime(i) == true && check_prime(j) == true) && i + j == number) {
-				count++;
-			}
-		}
-	}
-	fprintf(output, "%d sums", count);
-	if (negative == true) {
-		print_even_sums(number, count);
-	}
-	else {
-		fprintf(output, "\n");
-	}
-}
-/**
- * @brief print the three numbers composing the sum
- * @param number the number to chech goldbach
- * @param count the number of sums found
- */
-void print_odd_sums(long long number, int count) {
-	FILE *output = stdout;
-	fprintf(output, ": ");
 	int index = 0;
 	for (int i = 2; i < number; i++) {
 		for (int j = i; j < number; j++) {
-			for (int k = j; k < number; k++) {
-				if (check_prime(i) == true && check_prime(j) == true && check_prime(k) == true && i + j + k == number) {
-					fprintf(output, "%d + %d + %d", i, j, k);
-					index++;
-					if (index < count) {
-						fprintf(output, ", ");
+			if(even == true) {
+				if ((check_prime(i) == true && check_prime(j) == true) && i + j == number) {
+					count++;
+					if(print == true) {
+						if(index != 0) {
+							fprintf(output, ",");
+						}
+						fprintf(output, " %d + %d", i, j);
+						index = 1;
+					}
+				}
+			}
+			else{
+				for (int k = j; k < number; k++) {
+					if (check_prime(i) == true && check_prime(j) == true && check_prime(k) == true && i + j + k == number) {
+						count++;
+						if(print == true) {
+							if(index != 0) {
+								fprintf(output, ",");
+							}
+							fprintf(output, " %d + %d + %d", i, j, k);
+							index = 1;
+						}
 					}
 				}
 			}
 		}
 	}
-	fprintf(output, "\n");
+	return count;
 }
 /**
- * @brief find the amount of sums for the  odd number
- * @param number the number to check goldbach
+ * @brief check if the number is even
+ * @param number the number to be checked
+ * @return bool telling if the number is even
  */
-void sum_odd(long long number) {
+_Bool check_even(long long number) {
+	if (number % 2 == 0) {
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+/**
+ * @brief determines if the number is negative and calls find_sums
+ * @param number the number to be checked
+ */
+void check_negative(long long number) {
 	FILE *output = stdout;
-	int count = 0;
 	_Bool negative = false;
+	_Bool even = false;
+	int count = 0;
+	even = check_even(number);
 	fprintf(output, "%lld: ", number);
 	if (number < 0) {
 		number *= (-1);
 		negative = true;
 	}
-	for (int i = 2; i < number; i++) {
-		for (int j = i; j < number; j++) {
-			for (int k = j; k < number; k++) {
-				if (check_prime(i) == true && check_prime(j) == true && check_prime(k) == true && i + j + k == number) {
-					count++;
-				}
-			}
-		}
-	}
-	fprintf(output, "%d sums", count);
 	if (negative == true) {
-		print_odd_sums(number, count);
-	}
-	else {
+		count = find_sums(number,even,false);
+		fprintf(output, "%d sums:", count);
+		find_sums(number,even,true);
 		fprintf(output, "\n");
 	}
-}
-/**
- * @brief check if the number si oven or odd
- * @param number the number to be checked
- */
-void check_even(long long number) {
-	if (number % 2 == 0) {
-		sum_even(number);
-	}
 	else {
-		sum_odd(number);
+		count = find_sums(number,even,false);
+		fprintf(output, "%d sums\n", count);
 	}
 }
 /**
@@ -142,7 +108,7 @@ void check_valid(long long number) {
 		fprintf(output, "%lld: NA\n", number);
 	}
 	else {
-		check_even(number);
+		check_negative(number);
 	}
 }
 /**
