@@ -25,7 +25,7 @@ typedef struct  {
 } private_data_t;
 
 _Bool check_prime(long long number);
-int find_sums(long long number, _Bool even, _Bool print);
+int find_sums(long long number, _Bool even, _Bool print, char* str);
 _Bool check_even(long long number);
 _Bool check_negative(long long number);
 _Bool check_valid(long long number);
@@ -90,30 +90,22 @@ _Bool check_prime(long long number) {
  * @param _Bool tells if it should print the numbers
  * @return int telling the amount of sums found
  */
-int find_sums(long long number, _Bool even, _Bool print) {
+int find_sums(long long number, _Bool even, _Bool print, char* str) {
 	int count = 0;
-	//int flag = 0;
-	//char* str2;
-	// el otro string se pasa por parametro
+	int flag = 0;
+  char str2[100];
 	for (int i = 2; i < number; i++) {
 		for (int j = i; j < number; j++) {
 			if(even == true) {
 				if ((check_prime(i) == true && check_prime(j) == true) && i + j == number) {
 					count++;
 					if(print == true) {
-						/*if(flag != 0) {
-							str2 = ",";
-							strcat(str,str2);
+						if(flag != 0) {
+							strcat(str,", ");
 						}
-						str2 = " ";
-						strcat(str,str2);
-						sprintf(str2, "%d", i);
-						strcat(str,str2);
-						str2 = " + ";
-						strcat(str,str2);
-						sprintf(str2, "%d", j);
-						strcat(str,str2);
-						flag = 1;*/
+						sprintf(str2, "%d + %d", i, j); 
+            strcat(str,str2);
+						flag = 1;
 					}
 				}
 			}
@@ -123,21 +115,12 @@ int find_sums(long long number, _Bool even, _Bool print) {
 						&& check_prime(k) == true && i + j + k == number) {
 						count++;
 						if(print == true) {
-							/*if(flag != 0) {
-								str2 = ",";
-								strcat(str,str2);
+							if(flag != 0) {
+								strcat(str,", ");
 							}
-							sprintf(str2, "%d", i);
-							strcat(str,str2);
-							str2 = " + ";
-							strcat(str,str2);
-							sprintf(str2, "%d", j);
-							strcat(str,str2);
-							str2 = " + ";
-							strcat(str,str2);
-							sprintf(str2, "%d", k);
-							strcat(str,str2);
-							flag = 1;*/
+							sprintf(str2, "%d + %d + %d", i, j, k);
+              strcat(str,str2);
+							flag = 1;
 						}
 					}
 				}
@@ -258,7 +241,7 @@ void* run(void* data) {
   //const size_t thread_count = shared_data->thread_count;
 	long long my_thread_number;
 	size_t my_thread_sums;
-	//char sums[1000];
+	char sums[1000];
 
 	if(fscanf(input, "%lld", &my_thread_number) == 1){
 		if(check_valid(my_thread_number) == false){
@@ -267,13 +250,13 @@ void* run(void* data) {
 		}
 		else{
 			if(check_negative(my_thread_number) == false){
-				my_thread_sums = find_sums(my_thread_number, check_even(my_thread_number), false);
+				my_thread_sums = find_sums(my_thread_number, check_even(my_thread_number), false, sums);
 				sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums"
 				, my_thread_number, my_thread_sums);
 			}else{
-				my_thread_sums = find_sums(my_thread_number*(-1), check_even(my_thread_number*(-1)), true);
-				sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums: (sums)"
-				, my_thread_number, my_thread_sums);
+				my_thread_sums = find_sums(my_thread_number*(-1), check_even(my_thread_number*(-1)), true, sums);
+				sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums: %s"
+				, my_thread_number, my_thread_sums, sums);
 			}
 		}
 	}
