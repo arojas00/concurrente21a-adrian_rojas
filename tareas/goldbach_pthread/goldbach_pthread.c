@@ -1,3 +1,4 @@
+// el numero de sumas que realiza es igual al numero de hilos
 #define _POSIX_C_SOURCE 199309L
 
 #include <stdio.h>
@@ -30,7 +31,7 @@ _Bool check_negative(long long number);
 _Bool check_valid(long long number);
 void store_numbers();
 int create_threads(shared_data_t* shared_data);
-int measure_greet(shared_data_t* shared_data);
+int print_goldbach(shared_data_t* shared_data);
 void* run(void* data);
 void** create_matrix(size_t row_count, size_t col_count, size_t element_size);
 void free_matrix(const size_t row_count, void** matrix);
@@ -52,7 +53,7 @@ int main(int argc, char* argv[]) {
       shared_data->sums = (char**) create_matrix(shared_data->thread_count
         , SUMS_LEN, sizeof(char));
       if (shared_data->sums) {
-        error = measure_greet(shared_data);
+        error = print_goldbach(shared_data);
         free_matrix(shared_data->thread_count, (void**)shared_data->sums);
       } else {
         fprintf(stderr, "error: could not allocate semaphores\n");
@@ -182,8 +183,11 @@ _Bool check_valid(long long number) {
 		return true;
 	}
 }
-
-int measure_greet(shared_data_t* shared_data) {
+/**
+ * @brief check if the number si valid
+ * @param shared_data carries the sums to be printed
+ */
+int print_goldbach(shared_data_t* shared_data) {
   struct timespec start_time;
   clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &start_time);
 
@@ -201,6 +205,10 @@ int measure_greet(shared_data_t* shared_data) {
   printf("execution time: %.9lfs\n", elapsed);
   return error;
 }
+/**
+ * @brief creates the pthreads
+ * @param shared_data shared data for each thread
+ */
 int create_threads(shared_data_t* shared_data) {
   assert(shared_data);
   int error = EXIT_SUCCESS;
@@ -271,7 +279,12 @@ void* run(void* data) {
 	}
   return NULL;
 }
-
+/**
+ * @brief auxilar method for creating matrix
+ * @param row_count number of rows in the matrix
+ * @param col_count number of columns in the matrix
+ * @param element_size the size of the elements in the matrix
+ */
 void** create_matrix(size_t row_count, size_t col_count, size_t element_size) {
   void** matrix = (void**) calloc(row_count, sizeof(void*));
   if ( matrix == NULL ) {
@@ -287,7 +300,11 @@ void** create_matrix(size_t row_count, size_t col_count, size_t element_size) {
 
   return matrix;
 }
-
+/**
+ * @brief auxilar method for freeing matrix
+ * @param row_count number of rows in the matrix
+ * @param matrix matrix to be freed
+ */
 void free_matrix(const size_t row_count, void** matrix) {
   if (matrix) {
     for (size_t row = 0; row < row_count; ++row) {
