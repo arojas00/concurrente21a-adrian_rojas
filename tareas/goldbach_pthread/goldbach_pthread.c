@@ -159,7 +159,7 @@ _Bool check_negative(long long number) {
  * @param number the number to be checked
  */
 _Bool check_valid(long long number) {
-	if (number <= 5 && number >= 0) {
+	if (number <= 5 && number >= -5) {
 		return false;
 	}
 	else {
