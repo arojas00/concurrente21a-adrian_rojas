@@ -86,8 +86,9 @@ _Bool check_prime(long long number) {
 /**
  * @brief finds the sums for each number and prints them if needed
  * @param number the number to be checked
- * @param _Bool tells if the numer es even
- * @param _Bool tells if it should print the numbers
+ * @param even tells if the numer es even
+ * @param print tells if it should print the numbers
+ * @param str reference to the string containing the sums for each number
  * @return int telling the amount of sums found
  */
 int find_sums(long long number, _Bool even, _Bool print, char* str) {
