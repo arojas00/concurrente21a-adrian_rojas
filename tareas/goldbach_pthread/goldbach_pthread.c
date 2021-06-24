@@ -24,14 +24,13 @@ typedef struct {
 
 typedef struct  {
   size_t thread_number;
-  size_t start_position;
-  size_t finish_position;
   shared_data_t* shared_data;
 } private_data_t;
 
 int create_threads(shared_data_t* shared_data);
 int print_goldbach(shared_data_t* shared_data);
 void* run(void* data);
+void process_number(long long int number,int index, void* data);
 
 int main(int argc, char* argv[]) {
   FILE *input = stdin;
@@ -43,10 +42,6 @@ int main(int argc, char* argv[]) {
   while(fscanf(input, "%lld", &shared_data->numbers[shared_data->number_count]) == 1){
     shared_data->number_count++;
   }
-  printf("number_count %zu\n",shared_data->number_count);
-  for(size_t i = 0; i<shared_data->number_count;i++){
-    printf("inputs: %lld\n",shared_data->numbers[i]);
-  }
   if (shared_data) {
     shared_data->position = 0;
     shared_data->thread_count = sysconf(_SC_NPROCESSORS_ONLN);
@@ -57,16 +52,17 @@ int main(int argc, char* argv[]) {
       }
     }
     if (error == EXIT_SUCCESS) {
-      shared_data->sums = (char**) create_matrix(shared_data->thread_count
+      shared_data->sums = (char**) create_matrix(shared_data->number_count
         , SUMS_LEN, sizeof(char));
       if (shared_data->sums) {
         error = print_goldbach(shared_data);
-        free_matrix(shared_data->thread_count, (void**)shared_data->sums);
+        free_matrix(shared_data->number_count, (void**)shared_data->sums);
       } else {
         fprintf(stderr, "error: could not allocate semaphores\n");
         error = 3;
       }
       free(shared_data);
+      free(shared_data->numbers);
     } else {
       fprintf(stderr, "error: could not allocate shared memory\n");
       error = 2;
@@ -132,38 +128,46 @@ int print_goldbach(shared_data_t* shared_data) {
   struct timespec finish_time;
   clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &finish_time);
 
-  for (size_t index = 0; index < shared_data->thread_count; ++index) {
-    printf("thread %zu : %s\n",index , shared_data->sums[index]);
+  for (size_t index = 0; index < shared_data->number_count; ++index) {
+    printf("%s\n" , shared_data->sums[index]);
   }
 
-  double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
-    (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
-  printf("execution time: %.9lfs\n", elapsed);
+  // double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
+  //   (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+  // printf("execution time: %.9lfs\n", elapsed);
   return error;
 }
 void* run(void* data) {
 	const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
   const size_t my_thread_id = private_data->thread_number;
-  printf("%zu\n", my_thread_id);
-	long long my_thread_number = 0;
-	size_t my_thread_sums;
-	char sums[100];
-
-  if(check_valid(my_thread_number) == false){
-    sprintf(shared_data->sums[my_thread_id], "%lld: NA"
-      , my_thread_number);
-  }
-  else{
-    if(check_negative(my_thread_number) == false){
-      my_thread_sums = find_sums(my_thread_number, check_even(my_thread_number), false, sums);
-      sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums"
-      , my_thread_number, my_thread_sums);
-    }else{
-      my_thread_sums = find_sums(my_thread_number*(-1), check_even(my_thread_number*(-1)), true, sums);
-      sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums: %s"
-      , my_thread_number, my_thread_sums, sums);
-    }
+	
+  for (size_t i = my_thread_id; i < shared_data->number_count;
+   i=i+shared_data->thread_count){
+    process_number(shared_data->numbers[i], i, data);
   }
   return NULL;
+}
+void process_number(long long int number, int index, void* data){
+  const private_data_t* private_data = (private_data_t*)data;
+  shared_data_t* shared_data = private_data->shared_data;
+  size_t sums_count;
+	char calculated_sums[100];
+  if(check_valid(number) == false){
+    sprintf(shared_data->sums[index], "%lld: NA"
+      , number);
+  }
+  else{
+    if(check_negative(number) == false){
+      sums_count = find_sums(number, 
+        check_even(number), false, calculated_sums);
+      sprintf(shared_data->sums[index], "%lld: %zu sums"
+      , number, sums_count);
+    }else{
+      sums_count = find_sums(number*(-1), 
+        check_even(number*(-1)), true, calculated_sums);
+      sprintf(shared_data->sums[index], "%lld: %zu sums: %s"
+      , number, sums_count, calculated_sums);
+    }
+  }
 }
