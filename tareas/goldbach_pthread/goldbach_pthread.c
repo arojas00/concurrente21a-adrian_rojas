@@ -12,16 +12,20 @@
 #include "matrix.c"
 #include "goldbach_calculator.c"
 
-#define SUMS_LEN 1000
+#define SUMS_LEN 100
 
 typedef struct {
   size_t thread_count;
   size_t position;
   char** sums;
+  long long int* numbers;
+  size_t number_count;
 } shared_data_t;
 
 typedef struct  {
   size_t thread_number;
+  size_t start_position;
+  size_t finish_position;
   shared_data_t* shared_data;
 } private_data_t;
 
@@ -30,9 +34,19 @@ int print_goldbach(shared_data_t* shared_data);
 void* run(void* data);
 
 int main(int argc, char* argv[]) {
+  FILE *input = stdin;
   int error = EXIT_SUCCESS;
   shared_data_t* shared_data = (shared_data_t*)
     calloc(1, sizeof(shared_data_t));
+  shared_data->numbers = (long long int*) calloc(SUMS_LEN, sizeof(long long int));
+  shared_data->number_count = 0;
+  while(fscanf(input, "%lld", &shared_data->numbers[shared_data->number_count]) == 1){
+    shared_data->number_count++;
+  }
+  printf("number_count %zu\n",shared_data->number_count);
+  for(size_t i = 0; i<shared_data->number_count;i++){
+    printf("inputs: %lld\n",shared_data->numbers[i]);
+  }
   if (shared_data) {
     shared_data->position = 0;
     shared_data->thread_count = sysconf(_SC_NPROCESSORS_ONLN);
@@ -119,7 +133,7 @@ int print_goldbach(shared_data_t* shared_data) {
   clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &finish_time);
 
   for (size_t index = 0; index < shared_data->thread_count; ++index) {
-    printf("%s\n", shared_data->sums[index]);
+    printf("thread %zu : %s\n",index , shared_data->sums[index]);
   }
 
   double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
@@ -128,30 +142,28 @@ int print_goldbach(shared_data_t* shared_data) {
   return error;
 }
 void* run(void* data) {
-  FILE *input = stdin;
 	const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
   const size_t my_thread_id = private_data->thread_number;
-	long long my_thread_number;
+  printf("%zu\n", my_thread_id);
+	long long my_thread_number = 0;
 	size_t my_thread_sums;
-	char sums[1000];
+	char sums[100];
 
-	if(fscanf(input, "%lld", &my_thread_number) == 1){
-		if(check_valid(my_thread_number) == false){
-			sprintf(shared_data->sums[my_thread_id], "%lld: NA"
-				, my_thread_number);
-		}
-		else{
-			if(check_negative(my_thread_number) == false){
-				my_thread_sums = find_sums(my_thread_number, check_even(my_thread_number), false, sums);
-				sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums"
-				, my_thread_number, my_thread_sums);
-			}else{
-				my_thread_sums = find_sums(my_thread_number*(-1), check_even(my_thread_number*(-1)), true, sums);
-				sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums: %s"
-				, my_thread_number, my_thread_sums, sums);
-			}
-		}
-	}
+  if(check_valid(my_thread_number) == false){
+    sprintf(shared_data->sums[my_thread_id], "%lld: NA"
+      , my_thread_number);
+  }
+  else{
+    if(check_negative(my_thread_number) == false){
+      my_thread_sums = find_sums(my_thread_number, check_even(my_thread_number), false, sums);
+      sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums"
+      , my_thread_number, my_thread_sums);
+    }else{
+      my_thread_sums = find_sums(my_thread_number*(-1), check_even(my_thread_number*(-1)), true, sums);
+      sprintf(shared_data->sums[my_thread_id], "%lld: %zu sums: %s"
+      , my_thread_number, my_thread_sums, sums);
+    }
+  }
   return NULL;
 }
