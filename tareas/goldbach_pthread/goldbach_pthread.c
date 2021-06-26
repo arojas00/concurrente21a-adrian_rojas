@@ -12,7 +12,7 @@
 #include "matrix.c"
 #include "goldbach_calculator.c"
 
-#define SUMS_LEN 100
+#define SUMS_LEN 1000000
 
 typedef struct {
   size_t thread_count;
@@ -35,12 +35,18 @@ void process_number(long long int number,int index, void* data);
 int main(int argc, char* argv[]) {
   FILE *input = stdin;
   int error = EXIT_SUCCESS;
-  shared_data_t* shared_data = (shared_data_t*)
-    calloc(1, sizeof(shared_data_t));
-  shared_data->numbers = (long long int*) calloc(SUMS_LEN, sizeof(long long int));
+  size_t numbers_length = 100;
+  shared_data_t* shared_data = (shared_data_t*) calloc(1, sizeof(shared_data_t));
+  shared_data->numbers = (long long int*) calloc(numbers_length, 
+    sizeof(long long int));
   shared_data->number_count = 0;
   while(fscanf(input, "%lld", &shared_data->numbers[shared_data->number_count]) == 1){
     shared_data->number_count++;
+    if(shared_data->number_count+1 >= numbers_length){
+      numbers_length += 100;
+      shared_data->numbers = (long long int*) realloc(shared_data->numbers, 
+        numbers_length*sizeof(long long int));
+    }
   }
   if (shared_data) {
     shared_data->position = 0;
@@ -56,11 +62,13 @@ int main(int argc, char* argv[]) {
         , SUMS_LEN, sizeof(char));
       if (shared_data->sums) {
         error = print_goldbach(shared_data);
+
         free_matrix(shared_data->number_count, (void**)shared_data->sums);
       } else {
         fprintf(stderr, "error: could not allocate semaphores\n");
         error = 3;
       }
+
       free(shared_data);
       free(shared_data->numbers);
     } else {
@@ -103,9 +111,11 @@ int create_threads(shared_data_t* shared_data) {
         break;
       }
     }
+
     for (size_t index = 0; index < shared_data->thread_count; ++index) {
       pthread_join(threads[index], /*value_ptr*/ NULL);
     }
+
     free(threads);
     free(private_data);
   } else {
@@ -143,7 +153,7 @@ void* run(void* data) {
   const size_t my_thread_id = private_data->thread_number;
 	
   for (size_t i = my_thread_id; i < shared_data->number_count;
-   i=i+shared_data->thread_count){
+   i+=shared_data->thread_count){
     process_number(shared_data->numbers[i], i, data);
   }
   return NULL;
@@ -152,22 +162,24 @@ void process_number(long long int number, int index, void* data){
   const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
   size_t sums_count;
-	char calculated_sums[100];
+  size_t sums_length = SUMS_LEN;
+	char* calculated_sums = (char*) calloc(sums_length, sizeof(char));
   if(check_valid(number) == false){
-    sprintf(shared_data->sums[index], "%lld: NA"
-      , number);
+    sprintf(shared_data->sums[index], "%lld: NA", number);
   }
   else{
     if(check_negative(number) == false){
-      sums_count = find_sums(number, 
-        check_even(number), false, calculated_sums);
+      sums_count = find_sums(number, check_even(number), false,
+       calculated_sums);//,sums_length,shared_data->sums[index]);
       sprintf(shared_data->sums[index], "%lld: %zu sums"
       , number, sums_count);
     }else{
-      sums_count = find_sums(number*(-1), 
-        check_even(number*(-1)), true, calculated_sums);
+      sums_count = find_sums(number*(-1), check_even(number*(-1)), true,
+       calculated_sums);//, sums_length,shared_data->sums[index]);
       sprintf(shared_data->sums[index], "%lld: %zu sums: %s"
       , number, sums_count, calculated_sums);
     }
   }
+  free(calculated_sums);
+
 }
