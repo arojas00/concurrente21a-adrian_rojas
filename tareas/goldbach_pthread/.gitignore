@@ -35,3 +35,4 @@ latex
 tests_small
 doc
 .vscode/
+test-medium/
