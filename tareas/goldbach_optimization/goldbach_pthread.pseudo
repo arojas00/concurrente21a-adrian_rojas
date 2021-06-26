@@ -1,0 +1,13 @@
+shared count := 0
+shared mutex := semaphore(1)
+
+main(argc, argv[]):
+  if argc = 1 then
+    thread_count := read_integer()
+    create_thread(thread_count, secondary)
+end if
+
+secondary:
+  wait(mutex)
+  count := count+1
+  signal(mutex)
