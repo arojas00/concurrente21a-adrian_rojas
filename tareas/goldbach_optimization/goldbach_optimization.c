@@ -9,10 +9,11 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <string.h>
+#include <math.h>
 #include "matrix.c"
 #include "goldbach_calculator.c"
 
-#define SUMS_LEN 1000000
+#define SUMS_LEN 400000
 
 typedef struct {
   size_t thread_count;
@@ -142,9 +143,9 @@ int print_goldbach(shared_data_t* shared_data) {
     printf("%s\n" , shared_data->sums[index]);
   }
 
-  // double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
-  //   (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
-  // printf("execution time: %.9lfs\n", elapsed);
+  double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
+    (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+  printf("execution time: %.9lfs\n", elapsed);
   return error;
 }
 void* run(void* data) {
@@ -162,8 +163,8 @@ void process_number(long long int number, int index, void* data){
   const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
   size_t sums_count;
-  size_t sums_length = SUMS_LEN;
-	char* calculated_sums = (char*) calloc(sums_length, sizeof(char));
+  //size_t sums_length = SUMS_LEN;
+	char* calculated_sums = (char*) calloc(SUMS_LEN, sizeof(char));
   if(check_valid(number) == false){
     sprintf(shared_data->sums[index], "%lld: NA", number);
   }

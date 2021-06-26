@@ -3,7 +3,7 @@ EXECUTABLES=$(APPNAME) $(APPNAME)_asan $(APPNAME)_msan $(APPNAME)_tsan $(APPNAME
 
 CC=cc
 CC2=clang
-CFLAGS=-g -Wall -Wextra
+CFLAGS=-g -Wall -Wextra -lm
 LIBS=-pthread
 
 all: $(EXECUTABLES)
