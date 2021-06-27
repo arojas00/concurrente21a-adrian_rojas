@@ -5,7 +5,7 @@ OBJECTS=$(SOURCES:%.c=build/%.o)
 EXEFILE=bin/$(APPNAME)
 
 CC=cc
-CFLAGS=-Wall -Wextra -lm
+CFLAGS=-Wall -Wextra -lm -std=c99
 LIBS=-pthread
 
 LINTFILTERS=$\
