@@ -7,7 +7,7 @@ int main(int argc, char* argv[]) {
   int error = EXIT_SUCCESS;
   size_t numbers_length = NUMS_LEN;
   shared_data_t* shared_data = (shared_data_t*) calloc(1, sizeof(shared_data_t));
-  queue_init(&shared_data->queue);
+  //queue_init(&shared_data->queue);
   sem_init(&shared_data->can_consume, 0, 0);
   sem_init(&shared_data->can_access_units_consumed, 0, 1);
   sem_init(&shared_data->can_access_units_produced, 0, 1);
@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
       sem_destroy(&shared_data->can_consume);
       sem_destroy(&shared_data->can_access_units_consumed);
       sem_destroy(&shared_data->can_access_units_produced);
-      queue_free(&shared_data->queue);
+      //queue_free(&shared_data->queue);
       free(shared_data);
       free(shared_data->numbers);
     } else {
@@ -128,11 +128,20 @@ int print_goldbach(shared_data_t* shared_data) {
 void* run(void* data) {
 	const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
-  const size_t my_thread_id = private_data->thread_number;
-	
-  for (size_t i = my_thread_id; i < shared_data->number_count;
-   i+=shared_data->thread_count){
-    process_number(shared_data->numbers[i], i, data);
+  //const size_t my_thread_id = private_data->thread_number;
+	while (true) {
+    sem_wait(&shared_data->can_access_units_consumed);
+      if (shared_data->units_consumed >= shared_data->number_count) {
+        sem_post(&shared_data->can_access_units_consumed);
+        break;
+      }
+
+      size_t index = shared_data->units_consumed;
+      shared_data->units_consumed++;
+    sem_post(&shared_data->can_access_units_consumed);
+
+    process_number(shared_data->numbers[index], index, data);
+    //printf("Consumed\n");
   }
   return NULL;
 }
