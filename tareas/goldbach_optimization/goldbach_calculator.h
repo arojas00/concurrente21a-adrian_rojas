@@ -1,5 +1,5 @@
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef GOLDBACH_CALCULATOR_H
+#define GOLDBACH_CALCULATOR_H
 
 #include <stdio.h>
 #include <stdbool.h>

@@ -15,11 +15,24 @@
 #include <math.h>
 
 #include "matrix.h"
+#include "queue.h"
 #include "goldbach_calculator.h"
 
 #define SUMS_LEN 400000
 
 typedef struct {
+  queue_t queue;
+
+  size_t units_produced;
+  size_t units_consumed;
+
+  /*
+        semaphores
+    */
+  sem_t can_consume;
+  sem_t can_access_units_produced;
+  sem_t can_access_units_consumed;
+  
   size_t thread_count;
   size_t position;
   char** sums;

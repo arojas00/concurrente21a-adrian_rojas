@@ -1,17 +1,24 @@
 #include "goldbach_optimization.h"
 
+#define NUMS_LEN 100
+
 int main(int argc, char* argv[]) {
   FILE *input = stdin;
   int error = EXIT_SUCCESS;
-  size_t numbers_length = 100;
+  size_t numbers_length = NUMS_LEN;
   shared_data_t* shared_data = (shared_data_t*) calloc(1, sizeof(shared_data_t));
+  queue_init(&shared_data->queue);
+  sem_init(&shared_data->can_consume, 0, 0);
+  sem_init(&shared_data->can_access_units_consumed, 0, 1);
+  sem_init(&shared_data->can_access_units_produced, 0, 1);
   shared_data->numbers = (long long int*) calloc(numbers_length, 
     sizeof(long long int));
+  
   shared_data->number_count = 0;
   while(fscanf(input, "%lld", &shared_data->numbers[shared_data->number_count]) == 1){
     shared_data->number_count++;
     if(shared_data->number_count+1 >= numbers_length){
-      numbers_length += 100;
+      numbers_length += NUMS_LEN;
       shared_data->numbers = (long long int*) realloc(shared_data->numbers, 
         numbers_length*sizeof(long long int));
     }
@@ -36,7 +43,10 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "error: could not allocate semaphores\n");
         error = 3;
       }
-
+      sem_destroy(&shared_data->can_consume);
+      sem_destroy(&shared_data->can_access_units_consumed);
+      sem_destroy(&shared_data->can_access_units_produced);
+      queue_free(&shared_data->queue);
       free(shared_data);
       free(shared_data->numbers);
     } else {
