@@ -1,24 +1,11 @@
-#include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
-
-#define SUMS_LEN 400000
-
-_Bool check_prime(long long number);
-int find_sums(long long number, _Bool even, _Bool print
- , char* calculated_sums);//, size_t sums_length, char* sums);
-_Bool check_even(long long number);
-_Bool check_negative(long long number);
-_Bool check_valid(long long number);
-void store_sums(_Bool even,_Bool first,
- int i, int j, int k, char* calculated_sums);
+#include "goldbach_calculator.h"
 
 /**
  * @brief check if the number is prime
  * @param number the number to be checked
  * @return bool telling if the number is prime
  */
-_Bool check_prime(long long number) {
+bool check_prime(long long number) {
 	for (long long i = 2; i <= sqrt(number); i++) {
 		if (number % i == 0) {
 			return false;
@@ -34,9 +21,9 @@ _Bool check_prime(long long number) {
  * @param sums reference to the string containing the sums for each number
  * @return int telling the amount of sums found
  */
-int find_sums(long long number, _Bool even, _Bool print, char* calculated_sums){
+int find_sums(long long number, bool even, bool print, char* calculated_sums){
 	//, size_t sums_length, char* sums) {
-	_Bool first = true;
+	bool first = true;
 	int count = 0;
 	for (int i = 2; i <= number/2; i++) {
 		if(check_prime(i)){
@@ -48,7 +35,7 @@ int find_sums(long long number, _Bool even, _Bool print, char* calculated_sums){
 						store_sums(even, first, i, j, 0, calculated_sums);
 						first = false;
 						if(strlen(calculated_sums)+20>=SUMS_LEN){
-							sprintf(calculated_sums, "error: not enough allocated memory");
+							sprintf(calculated_sums, "error: not enough allocated memory for this test case");
 							return count;
 						}
 					}
@@ -64,7 +51,7 @@ int find_sums(long long number, _Bool even, _Bool print, char* calculated_sums){
 								store_sums(even, first, i, j, k, calculated_sums);
 								first = false;
 								if(strlen(calculated_sums)+20>=SUMS_LEN){
-									sprintf(calculated_sums, "error: not enough allocated memory");
+									sprintf(calculated_sums, "error: not enough allocated memory for this test case");
 									return count;
 								}
 							}
@@ -76,7 +63,7 @@ int find_sums(long long number, _Bool even, _Bool print, char* calculated_sums){
 	}
 	return count;
 }
-void store_sums(_Bool even,_Bool first,
+void store_sums(bool even,bool first,
  int i, int j, int k, char* calculated_sums){
 	char* str = (char*) calloc(100, sizeof(char));
 	if(first == false) {
@@ -104,7 +91,7 @@ void store_sums(_Bool even,_Bool first,
  * @param number the number to be checked
  * @return bool telling if the number is even
  */
-_Bool check_even(long long number) {
+bool check_even(long long number) {
 	if (number % 2 == 0) {
 		return true;
 	}
@@ -116,7 +103,7 @@ _Bool check_even(long long number) {
  * @brief determines if the number is negative and calls find_sums
  * @param number the number to be checked
  */
-_Bool check_negative(long long number) {
+bool check_negative(long long number) {
 	if (number < 0) {
 		return true;
 	}
@@ -128,7 +115,7 @@ _Bool check_negative(long long number) {
  * @brief check if the number si valid
  * @param number the number to be checked
  */
-_Bool check_valid(long long number) {
+bool check_valid(long long number) {
 	if (number <= 5 && number >= -5) {
 		return false;
 	}

@@ -1,47 +1,68 @@
 APPNAME=$(shell basename $(shell pwd))
-EXECUTABLES=$(APPNAME) $(APPNAME)_asan $(APPNAME)_msan $(APPNAME)_tsan $(APPNAME)_ubsan
+HEADERS=$(wildcard *.h)
+SOURCES=$(wildcard *.c)
+OBJECTS=$(SOURCES:%.c=build/%.o)
+EXEFILE=bin/$(APPNAME)
 
 CC=cc
-CC2=clang
-CFLAGS=-g -Wall -Wextra -lm -std=c99
+CFLAGS=-Wall -Wextra -lm
 LIBS=-pthread
 
-all: $(EXECUTABLES)
+LINTFILTERS=$\
+	-build/c++11,$\
+	-build/header_guard,$\
+	-build/include_subdir,$\
+	-readability/casting,$\
+	-runtime/references
 
-$(APPNAME): $(APPNAME).c
-	$(CC) $(CFLAGS) $(APPNAME).c -o $(APPNAME) $(LIBS)
+debug: CFLAGS += -g
+release: CFLAGS += -O3 -DNDEBUG
 
-$(APPNAME)_asan: $(APPNAME).c
-	$(CC2) $(CFLAGS) -fsanitize=address $(APPNAME).c -o $(APPNAME)_asan $(LIBS)
+asan: CFLAGS += -fsanitize=address -fno-omit-frame-pointer
+msan: CFLAGS += -fsanitize=memory
+msan: CC = clang
+tsan: CFLAGS += -fsanitize=thread
+ubsan: CFLAGS += -fsanitize=undefined
 
-$(APPNAME)_msan: $(APPNAME).c
-	$(CC2) $(CFLAGS) -fsanitize=memory $(APPNAME).c -o $(APPNAME)_msan $(LIBS)
+.SECONDEXPANSION:
 
-$(APPNAME)_tsan: $(APPNAME).c
-	$(CC2) $(CFLAGS) -fsanitize=thread $(APPNAME).c -o $(APPNAME)_tsan $(LIBS)
+default: $(EXEFILE)
+debug: $(EXEFILE)
+release: $(EXEFILE)
+asan: $(EXEFILE)
+msan: $(EXEFILE)
+tsan: $(EXEFILE)
+ubsan: $(EXEFILE)
 
-$(APPNAME)_ubsan: $(APPNAME).c
-	$(CC2) $(CFLAGS) -fsanitize=undefined $(APPNAME).c -o $(APPNAME)_ubsan $(LIBS)
+$(EXEFILE): $(OBJECTS) | $$(@D)/.
+	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+
+build/%.o: %.c | $$(@D)/.
+	$(CC) -c $(CFLAGS) $< -o $@ $(LIBS)
+
+.PRECIOUS: %/.
+%/.:
+	mkdir -p $(dir $@)
 
 .PHONY: memcheck
 memcheck:
-	valgrind ./$(APPNAME)
+	valgrind $(EXEFILE)
 
 .PHONY: helgrind
 helgrind:
-	valgrind --tool=helgrind --quiet ./$(APPNAME)
+	valgrind --tool=helgrind --quiet $(EXEFILE)
 
 .PHONY: rebuild
-rebuild: clean $(APPNAME)
+rebuild: clean $(EXEFILE)
 
 .PHONY: lint
 lint:
-	cpplint --filter=-readability/casting $(APPNAME).c
+	cpplint --filter=$(LINTFILTERS) $(HEADERS) $(SOURCES)
 
 .PHONY: gitignore
 gitignore:
-	echo $(EXECUTABLES) | tr " " "\n" > .gitignore
+	echo "bin/ build/" | tr " " "\n" > .gitignore
 
 .PHONY: clean
 clean:
-	rm -rf $(EXECUTABLES)
+	rm -rf bin/ build/

@@ -1,7 +1,4 @@
-#include <stdio.h>
-
-void** create_matrix(size_t row_count, size_t col_count, size_t element_size);
-void free_matrix(const size_t row_count, void** matrix);
+#include "matrix.h"
 
 /**
  * @brief auxilar method for creating matrix
