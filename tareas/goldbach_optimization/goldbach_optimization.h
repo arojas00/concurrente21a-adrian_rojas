@@ -18,9 +18,6 @@
 #include "goldbach_calculator.h"
 
 typedef struct {
-    /*
-        semaphores
-    */
   sem_t can_access_numbers_consumed;
 
   size_t numbers_consumed;

@@ -1,8 +1,9 @@
 #include "goldbach_optimization.h"
 
-#define NUMS_LEN 100
-//#define SUMS_LEN 10000000 
+// SUMS_LEN is also defined in goldbach_calculator.c
+//#define SUMS_LEN 10000000 // this length for the sums array is needed for test case 21
 #define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
+#define NUMS_LEN 100
 
 int main(int argc, char* argv[]) {
   FILE *input = stdin;
@@ -116,15 +117,18 @@ int print_goldbach(shared_data_t* shared_data) {
     printf("%s\n" , shared_data->sums[index]);
   }
 
-  double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
-    (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
-  printf("execution time: %.9lfs\n", elapsed);
+  // double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
+  //   (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+  // printf("execution time: %.9lfs\n", elapsed); //for time measuring
   return error;
 }
+/**
+ * @brief run method for pthreads
+ * @param data shared data for each thread
+ */
 void* run(void* data) {
 	const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
-  //const size_t my_thread_id = private_data->thread_number;
 	while (true) {
     sem_wait(&shared_data->can_access_numbers_consumed);
       if (shared_data->numbers_consumed >= shared_data->number_count) {
@@ -137,10 +141,15 @@ void* run(void* data) {
     sem_post(&shared_data->can_access_numbers_consumed);
 
     process_number(shared_data->numbers[index], index, data);
-    //printf("Consumed\n");
   }
   return NULL;
 }
+/**
+ * @brief processes the number assigned to the thread
+ * @param number number to be processed
+ * @param index index assigned to the given number
+ * @param data shared data for each thread
+ */
 void process_number(long long int number, int index, void* data){
   const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
@@ -164,5 +173,4 @@ void process_number(long long int number, int index, void* data){
     }
   }
   free(calculated_sums);
-
 }

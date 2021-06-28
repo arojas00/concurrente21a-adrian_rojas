@@ -1,7 +1,8 @@
 #include "goldbach_calculator.h"
 
-//#define SUMS_LEN 10000000 
-#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
+// SUMS_LEN is also defined in goldbach_optimization.c
+#define SUMS_LEN 10000000 // this length for the sums array is needed for test case 21
+//#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
 
 /**
  * @brief check if the number is prime
@@ -27,7 +28,7 @@ bool check_prime(long long number) {
  * @param number the number to be checked
  * @param even tells if the numer es even
  * @param print tells if it should print the numbers
- * @param sums reference to the string containing the sums for each number
+ * @param calculated_sums reference to the string containing the sums for each number
  * @return int telling the amount of sums found
  */
 int find_sums(long long number, bool even, bool print, char* calculated_sums){
@@ -60,7 +61,7 @@ int find_sums(long long number, bool even, bool print, char* calculated_sums){
 								store_sums(even, first, i, j, k, calculated_sums);
 								first = false;
 								if(strlen(calculated_sums)+20>=SUMS_LEN){
-									sprintf(calculated_sums, "error: not enough allocated memory for this test case");
+									sprintf(calculated_sums, "error: not enough allocated memory for this number");
 									return count;
 								}
 							}
@@ -72,7 +73,16 @@ int find_sums(long long number, bool even, bool print, char* calculated_sums){
 	}
 	return count;
 }
-void store_sums(bool even,bool first,
+/**
+ * @brief concatenates the sums found into a string
+ * @param even tells if the numer es even
+ * @param first tells if its the first sum to determine format
+ * @param i first number of the sum
+ * @param j second number of the sum
+ * @param k third number of the sum, if its an odd number
+ * @param calculated_sums reference to the string containing the sums for each number
+ */
+void store_sums(bool even, bool first,
  int i, int j, int k, char* calculated_sums){
 	char* str = (char*) calloc(100, sizeof(char));
 	if(first == false) {
@@ -85,7 +95,7 @@ void store_sums(bool even,bool first,
 		sprintf(str, "%d + %d + %d", i, j, k);
 	}
 	strcat(calculated_sums,str);
-	//printf("strlen: %lu\n", strlen(calculated_sums)+strlen(str));
+	// printf("strlen: %lu\n", strlen(calculated_sums)+strlen(str));
 	// if(strlen(calculated_sums)+strlen(str)*2>=sums_length){
 	// 	sums_length+=100;
 	// 	char* copy1 = (char*) realloc(calculated_sums, sums_length*sizeof(char));
