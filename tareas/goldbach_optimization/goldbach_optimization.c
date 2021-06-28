@@ -1,8 +1,8 @@
 #include "goldbach_optimization.h"
 
 // SUMS_LEN is also defined in goldbach_calculator.c
-//#define SUMS_LEN 10000000 // this length for the sums array is needed for test case 21
-#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
+#define SUMS_LEN 10000000 // this length for the sums array is needed for test case 21
+//#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
 #define NUMS_LEN 100
 
 int main(int argc, char* argv[]) {
