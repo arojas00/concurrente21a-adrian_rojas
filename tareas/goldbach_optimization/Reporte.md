@@ -9,7 +9,7 @@ Tras analizar las estadisticas proporcionadas por la herramienta de profiling Kc
 Tras implementar el diseño de optimización se consiguó reducir el tiempo de 245 segundos a 119 segundos. Este incremento se evidencia en el speedup, el cual pasó de 3.13 a 6.41.
 
 ## Comparacion de optimizaciones
-<img src="../../src/Optimization.png">
+<img src="../../src/Optimizations.png">
 
 A pesar de que la version serial tenia una duracion muy elevada, las optimizaciones lograron reducir este tiempo considerablemente. La optimización que tuvo el menor impacto fue el mapeo por cilcos. Aunque este mapeo es le mas facil de implementar, su speedup fue realtivamente bajo. El mapeo por bloque prodría tener una mejora mas destacable con respecto a la duración. Las siguientes optimizaciónes sí lograron un mayor impacto en el rendimiento, reduciendo la duración a la mitad con respecto a su predecesor. La ultima optimizacion en la función check_prime fue la de mayor eficiencia entre las tres. 
 
