@@ -1,16 +1,15 @@
 #include "goldbach_optimization.h"
 
 #define NUMS_LEN 100
+//#define SUMS_LEN 10000000 
+#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
 
 int main(int argc, char* argv[]) {
   FILE *input = stdin;
   int error = EXIT_SUCCESS;
   size_t numbers_length = NUMS_LEN;
   shared_data_t* shared_data = (shared_data_t*) calloc(1, sizeof(shared_data_t));
-  //queue_init(&shared_data->queue);
-  sem_init(&shared_data->can_consume, 0, 0);
-  sem_init(&shared_data->can_access_units_consumed, 0, 1);
-  sem_init(&shared_data->can_access_units_produced, 0, 1);
+  sem_init(&shared_data->can_access_numbers_consumed, 0, 1);
   shared_data->numbers = (long long int*) calloc(numbers_length, 
     sizeof(long long int));
   
@@ -43,10 +42,7 @@ int main(int argc, char* argv[]) {
         fprintf(stderr, "error: could not allocate semaphores\n");
         error = 3;
       }
-      sem_destroy(&shared_data->can_consume);
-      sem_destroy(&shared_data->can_access_units_consumed);
-      sem_destroy(&shared_data->can_access_units_produced);
-      //queue_free(&shared_data->queue);
+      sem_destroy(&shared_data->can_access_numbers_consumed);
       free(shared_data);
       free(shared_data->numbers);
     } else {
@@ -130,15 +126,15 @@ void* run(void* data) {
   shared_data_t* shared_data = private_data->shared_data;
   //const size_t my_thread_id = private_data->thread_number;
 	while (true) {
-    sem_wait(&shared_data->can_access_units_consumed);
-      if (shared_data->units_consumed >= shared_data->number_count) {
-        sem_post(&shared_data->can_access_units_consumed);
+    sem_wait(&shared_data->can_access_numbers_consumed);
+      if (shared_data->numbers_consumed >= shared_data->number_count) {
+        sem_post(&shared_data->can_access_numbers_consumed);
         break;
       }
 
-      size_t index = shared_data->units_consumed;
-      shared_data->units_consumed++;
-    sem_post(&shared_data->can_access_units_consumed);
+      size_t index = shared_data->numbers_consumed;
+      shared_data->numbers_consumed++;
+    sem_post(&shared_data->can_access_numbers_consumed);
 
     process_number(shared_data->numbers[index], index, data);
     //printf("Consumed\n");

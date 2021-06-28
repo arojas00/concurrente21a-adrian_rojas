@@ -1,13 +1,22 @@
 #include "goldbach_calculator.h"
 
+//#define SUMS_LEN 10000000 
+#define SUMS_LEN 400000 // this length for the sums array is enough for every test case except 21
+
 /**
  * @brief check if the number is prime
  * @param number the number to be checked
  * @return bool telling if the number is prime
  */
 bool check_prime(long long number) {
-	for (long long i = 2; i <= sqrt(number); i++) {
-		if (number % i == 0) {
+	if (number <= 63){
+		return (FIRST_PRIMES >> number) & true;
+	}
+	if (number%2 == 0){
+		return false;
+	}
+	for (long long i = 3; i*i <= number; i += 2) {
+		if (number%i == 0){
 			return false;
 		}
 	}
@@ -35,7 +44,7 @@ int find_sums(long long number, bool even, bool print, char* calculated_sums){
 						store_sums(even, first, i, j, 0, calculated_sums);
 						first = false;
 						if(strlen(calculated_sums)+20>=SUMS_LEN){
-							sprintf(calculated_sums, "error: not enough allocated memory for this test case");
+							sprintf(calculated_sums, "error: not enough allocated memory for this number");
 							return count;
 						}
 					}

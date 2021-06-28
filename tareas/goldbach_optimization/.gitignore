@@ -32,9 +32,8 @@
 *.app
 html
 latex
-tests_small
+tests
 doc
 .vscode/
-test-medium/
 bin/
 build/
