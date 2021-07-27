@@ -117,9 +117,9 @@ int print_goldbach(shared_data_t* shared_data) {
     printf("%s\n" , shared_data->sums[index]);
   }
 
-  // double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
-  //   (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
-  // printf("execution time: %.9lfs\n", elapsed); //for time measuring
+  double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
+    (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
+  printf("execution time: %.9lfs\n", elapsed); //for time measuring
   return error;
 }
 /**
