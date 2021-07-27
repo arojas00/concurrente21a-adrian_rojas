@@ -1,11 +1,12 @@
 #ifndef GOLDBACH_CALCULATOR_H
 #define GOLDBACH_CALCULATOR_H
 
-#include <stdio.h>
-#include <stdbool.h>
-#include <math.h>
-#include <string.h>
-#include <stdlib.h>
+// #include <stdio.h>
+// #include <stdbool.h>
+// #include <math.h>
+// #include <string.h>
+// #include <stdlib.h>
+#include "goldbach_optimization.h"
 
 #define FIRST_PRIMES ((1ULL <<  2) | (1ULL <<  3) | (1ULL <<  5) | \
                     	(1ULL <<  7) | (1ULL << 11) | (1ULL << 13) | \
@@ -16,7 +17,7 @@
 
 bool check_prime(long long number);
 int find_sums(long long number, bool even, bool print
- , char* calculated_sums);//, size_t sums_length, char* sums);
+ , char* calculated_sums, size_t sums_length);
 bool check_even(long long number);
 bool check_negative(long long number);
 bool check_valid(long long number);

@@ -38,5 +38,6 @@ int create_threads(shared_data_t* shared_data);
 int print_goldbach(shared_data_t* shared_data);
 void* run(void* data);
 void process_number(long long int number,int index, void* data);
+void increase_size(char* calculated_sums, size_t sums_length);
 
 #endif

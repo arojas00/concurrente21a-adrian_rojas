@@ -31,8 +31,7 @@ bool check_prime(long long number) {
  * @param calculated_sums reference to the string containing the sums for each number
  * @return int telling the amount of sums found
  */
-int find_sums(long long number, bool even, bool print, char* calculated_sums){
-	//, size_t sums_length, char* sums) {
+int find_sums(long long number, bool even, bool print, char* calculated_sums, size_t sums_length){
 	bool first = true;
 	int count = 0;
 	for (int i = 2; i <= number/2; i++) {
@@ -47,6 +46,9 @@ int find_sums(long long number, bool even, bool print, char* calculated_sums){
 						if(strlen(calculated_sums)+20>=SUMS_LEN){
 							sprintf(calculated_sums, "error: not enough allocated memory for this number");
 							return count;
+							// printf("necesito realloc %zu\n", strlen(calculated_sums)+30);
+							// sums_length*=2;
+							// increase_size(calculated_sums, sums_length);
 						}
 					}
 				}
@@ -61,8 +63,11 @@ int find_sums(long long number, bool even, bool print, char* calculated_sums){
 								store_sums(even, first, i, j, k, calculated_sums);
 								first = false;
 								if(strlen(calculated_sums)+20>=SUMS_LEN){
-									sprintf(calculated_sums, "error: not enough allocated memory for this number");
+									sprintf(calculated_sums, "error: not enough allocated memory for this number (length:%zu)",sums_length);
 									return count;
+									// printf("necesito realloc %zu\n", strlen(calculated_sums)+30);
+									// sums_length*=2;
+									// increase_size(calculated_sums, sums_length);
 								}
 							}
 						}

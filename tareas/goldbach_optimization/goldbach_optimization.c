@@ -154,23 +154,30 @@ void process_number(long long int number, int index, void* data){
   const private_data_t* private_data = (private_data_t*)data;
   shared_data_t* shared_data = private_data->shared_data;
   size_t sums_count;
-  //size_t sums_length = SUMS_LEN;
-	char* calculated_sums = (char*) calloc(SUMS_LEN, sizeof(char));
+  size_t sums_length = SUMS_LEN;
+	char* calculated_sums = (char*) calloc(sums_length, sizeof(char));
   if(check_valid(number) == false){
     sprintf(shared_data->sums[index], "%lld: NA", number);
   }
   else{
     if(check_negative(number) == false){
       sums_count = find_sums(number, check_even(number), false,
-       calculated_sums);//,sums_length,shared_data->sums[index]);
+       calculated_sums,sums_length);
       sprintf(shared_data->sums[index], "%lld: %zu sums"
       , number, sums_count);
     }else{
       sums_count = find_sums(number*(-1), check_even(number*(-1)), true,
-       calculated_sums);//, sums_length,shared_data->sums[index]);
+       calculated_sums, sums_length);
+      // if(sums_length > SUMS_LEN){
+      //   increase_size(shared_data->sums[index], sums_length);
+      // }
       sprintf(shared_data->sums[index], "%lld: %zu sums: %s"
       , number, sums_count, calculated_sums);
     }
   }
   free(calculated_sums);
+}
+void increase_size(char* array, size_t array_length){
+  char* temp_ptr = (char*) realloc(array,array_length*sizeof(char));
+  array = temp_ptr;
 }
