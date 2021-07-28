@@ -1,4 +1,10 @@
 #include "goldbach_optimization.h"
+#include <errno.h>
+#include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <utility>
+#include <mpi.h>
 
 // SUMS_LEN is also defined in goldbach_calculator.c
 #define SUMS_LEN 10000000 // this length for the sums array is needed for test case 21
@@ -36,7 +42,7 @@ int main(int argc, char* argv[]) {
       shared_data->sums = (char**) create_matrix(shared_data->number_count
         , SUMS_LEN, sizeof(char));
       if (shared_data->sums) {
-        error = print_goldbach(shared_data);
+        print_goldbach(shared_data, argc, argv);
 
         free_matrix(shared_data->number_count, (void**)shared_data->sums);
       } else {
@@ -55,60 +61,36 @@ int main(int argc, char* argv[]) {
   return error;
 }
 /**
- * @brief creates the pthreads
- * @param shared_data shared data for each thread
- */
-int create_threads(shared_data_t* shared_data) {
-  assert(shared_data);
-  int error = EXIT_SUCCESS;
-  pthread_t* threads = (pthread_t*) calloc(shared_data->thread_count
-    , sizeof(pthread_t));
-  private_data_t* private_data = (private_data_t*)
-    calloc(shared_data->thread_count, sizeof(private_data_t));
-  if (threads && private_data) {
-    for (size_t index = 0; index < shared_data->thread_count; ++index) {
-      private_data[index].thread_number = index;
-      private_data[index].shared_data = shared_data;
-
-      if (error == EXIT_SUCCESS) {
-        if (pthread_create(&threads[index], /*attr*/ NULL, run
-          , &private_data[index]) == EXIT_SUCCESS) {
-        } else {
-          fprintf(stderr, "error: could not create thread %zu\n", index);
-          error = 21;
-          shared_data->thread_count = index;
-          break;
-        }
-      } else {
-        fprintf(stderr, "error: could not init semaphore %zu\n", index);
-        error = 22;
-        shared_data->thread_count = index;
-        break;
-      }
-    }
-
-    for (size_t index = 0; index < shared_data->thread_count; ++index) {
-      pthread_join(threads[index], /*value_ptr*/ NULL);
-    }
-
-    free(threads);
-    free(private_data);
-  } else {
-    fprintf(stderr, "error: could not allocate memory for %zu threads\n"
-      , shared_data->thread_count);
-    error = 22;
-  }
-  return error;
-}
-/**
  * @brief check if the number si valid
  * @param shared_data carries the sums to be printed
  */
-int print_goldbach(shared_data_t* shared_data) {
+void print_goldbach(shared_data_t* shared_data, int argc, char* argv[]) {
   struct timespec start_time;
   clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &start_time);
 
-  int error = create_threads(shared_data);
+  if (MPI_Init(&argc, &argv) == MPI_SUCCESS) {
+    int rank = -1;  // process_number
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+
+    int process_count = -1;
+    MPI_Comm_size(MPI_COMM_WORLD, &process_count);
+
+    int global_start = 0;
+    int global_finish = shared_data->number_count;
+
+    const int my_process_start
+      = calculate_start(rank, global_finish, process_count, global_start);
+    const int my_process_finish
+      = calculate_finish(rank, global_finish, process_count, global_start);
+    for (int index = my_process_start; index < my_process_finish; index++) {
+      process_number(shared_data->numbers[index], index, shared_data);
+    }
+    MPI_Finalize();
+  }
+  // openmp version
+  // for(size_t index = 0; index < shared_data->number_count; index++){
+  //   process_number(shared_data->numbers[index], index, shared_data);
+  // }
 
   struct timespec finish_time;
   clock_gettime(/*clk_id*/CLOCK_MONOTONIC, &finish_time);
@@ -120,29 +102,6 @@ int print_goldbach(shared_data_t* shared_data) {
   double elapsed = (finish_time.tv_sec - start_time.tv_sec) +
     (finish_time.tv_nsec - start_time.tv_nsec) * 1e-9;
   printf("execution time: %.9lfs\n", elapsed); //for time measuring
-  return error;
-}
-/**
- * @brief run method for pthreads
- * @param data shared data for each thread
- */
-void* run(void* data) {
-	const private_data_t* private_data = (private_data_t*)data;
-  shared_data_t* shared_data = private_data->shared_data;
-	while (true) {
-    sem_wait(&shared_data->can_access_numbers_consumed);
-      if (shared_data->numbers_consumed >= shared_data->number_count) {
-        sem_post(&shared_data->can_access_numbers_consumed);
-        break;
-      }
-
-      size_t index = shared_data->numbers_consumed;
-      shared_data->numbers_consumed++;
-    sem_post(&shared_data->can_access_numbers_consumed);
-
-    process_number(shared_data->numbers[index], index, data);
-  }
-  return NULL;
 }
 /**
  * @brief processes the number assigned to the thread
@@ -150,9 +109,8 @@ void* run(void* data) {
  * @param index index assigned to the given number
  * @param data shared data for each thread
  */
-void process_number(long long int number, int index, void* data){
-  const private_data_t* private_data = (private_data_t*)data;
-  shared_data_t* shared_data = private_data->shared_data;
+void process_number(long long int number, int index, shared_data_t* data){
+  shared_data_t* shared_data = data;
   size_t sums_count;
   size_t sums_length = SUMS_LEN;
 	char* calculated_sums = (char*) calloc(sums_length, sizeof(char));
@@ -180,4 +138,12 @@ void process_number(long long int number, int index, void* data){
 void increase_size(char* array, size_t array_length){
   char* temp_ptr = (char*) realloc(array,array_length*sizeof(char));
   array = temp_ptr;
+}
+int calculate_start(int rank, int end, int workers, int begin) {
+  const int range = end - begin;
+  return begin + rank * (range / workers) + std::min(rank, range % workers);
+}
+
+inline int calculate_finish(int rank, int end, int workers, int begin) {
+  return calculate_start(rank + 1, end, workers, begin);
 }

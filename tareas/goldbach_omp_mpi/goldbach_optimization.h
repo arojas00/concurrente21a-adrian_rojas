@@ -34,10 +34,12 @@ typedef struct  {
   shared_data_t* shared_data;
 } private_data_t;
 
-int create_threads(shared_data_t* shared_data);
-int print_goldbach(shared_data_t* shared_data);
-void* run(void* data);
-void process_number(long long int number,int index, void* data);
+int create_threads(shared_data_t* shared_data, int argc, char* argv[]);
+void print_goldbach(shared_data_t* shared_data, int argc, char* argv[]);
+void* run(void* data, int argc, char* argv[]);
+void process_number(long long int number,int index, shared_data_t* data);
 void increase_size(char* calculated_sums, size_t sums_length);
+int calculate_start(int rank, int end, int workers, int begin);
+inline int calculate_finish(int rank, int end, int workers, int begin);
 
 #endif

@@ -1,11 +1,11 @@
 APPNAME=$(shell basename $(shell pwd))
 HEADERS=$(wildcard *.h)
-SOURCES=$(wildcard *.c)
-OBJECTS=$(SOURCES:%.c=build/%.o)
+SOURCES=$(wildcard *.cpp)
+OBJECTS=$(SOURCES:%.cpp=build/%.o)
 EXEFILE=bin/$(APPNAME)
 
-CC=cc
-CFLAGS=-Wall -Wextra -lm -std=c99 -fopenmp
+CC=mpic++
+CFLAGS=-Wall -Wextra -lm -std=gnu++11 -fopenmp
 LIBS=-pthread
 
 LINTFILTERS=$\
@@ -37,7 +37,7 @@ ubsan: $(EXEFILE)
 $(EXEFILE): $(OBJECTS) | $$(@D)/.
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
-build/%.o: %.c | $$(@D)/.
+build/%.o: %.cpp | $$(@D)/.
 	$(CC) -c $(CFLAGS) $< -o $@ $(LIBS)
 
 .PRECIOUS: %/.
