@@ -18,3 +18,11 @@ A pesar de que la version serial tenia una duracion muy elevada, las optimizacio
 <img src="../../src/Concurrency_level.png">
 
 En el ultimo grafico se puede apreciar la relacion entre el grado de concurrencia y los tiempos conseguidos. Se puede determinar que entre mas hilos se consigué una menor duración, pero esto tambien le cuesta recursos a la computadora, por lo que se vuelve ineficiente asignarle tantos hilos al programa. Especificamente a partir de los 8 hilos, el speedup es muy similar al de los siguientes grados de concurrencia, y esto se puede ver reflejado en los tiempos de ejecución. Por lo tanto, la cantidad de hilos optima para conseguir el mejor rendimiento sería de 8 hilos, debido a la relación tiempo-eficiencia.
+
+<img src="../../src/openmp.png">
+
+Tras implementar la tecnologia openmp en lugar de los pthreads se obtuvo un mayor rendimiento tanto en el tiempo de ejecucion como eficiencia al utilizar los recursos. Esto puede estar relacionado a que se utilizó una unidad de descomposicion mas granular, ya que anteriormente se habia asignado un numero a cada hilo para que se encargara de procesar las sumas correspondientes. Al utilizar el parallel for fue sencillo asignar una suma a cada hilo creado, con lo cual no se tendria que esperar a que el numero con mas sumas termine para finalizar el programa, si no que entre todos los hilos se dividirian ese trabajo eficientemente. 
+
+<img src="../../src/mpi.png">
+
+Con respecto a la tecnologia mpi no hubo un incremento importante en el rendimiento del programa, pero esto se debe a que se ejecutó con un solo proceso. Esto debido a que a la hora de crear mas de un proceso, estos realizan la lectura del input, por lo que a partir del primero, el resto de procesos quedan esperando a recibir su input. Se intentó limitar la lectura del input a solamente el proceso 0, pero esto resultó en un segmantation fault.  
